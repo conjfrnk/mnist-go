@@ -6,12 +6,12 @@ import (
 	"os"
 )
 
-type mnistLabelFileHeader struct {
+type labelHeader struct {
 	MagicNumber    uint32
 	NumberOfLabels uint32
 }
 
-type mnistImageFileHeader struct {
+type imageHeader struct {
 	MagicNumber     uint32
 	NumberOfImages  uint32
 	NumberOfRows    uint32
@@ -19,7 +19,7 @@ type mnistImageFileHeader struct {
 }
 
 type mnistImage struct {
-	Pixels [mnistImageSize]uint8
+	Pixels [imageSize]uint8
 }
 
 type mnistDataset struct {
@@ -35,13 +35,13 @@ func getLabels(path string) ([]uint8, error) {
 	}
 	defer file.Close()
 
-	var header mnistLabelFileHeader
+	var header labelHeader
 	if err := binary.Read(file, binary.BigEndian, &header); err != nil {
 		return nil, fmt.Errorf("could not read label file header from: %s, %v", path, err)
 	}
 
-	if header.MagicNumber != mnistLabelMagic {
-		return nil, fmt.Errorf("invalid header read from label file: %s (%08X not %08X)", path, header.MagicNumber, mnistLabelMagic)
+	if header.MagicNumber != labelMagic {
+		return nil, fmt.Errorf("invalid header read from label file: %s (%08X not %08X)", path, header.MagicNumber, labelMagic)
 	}
 
 	labels := make([]uint8, header.NumberOfLabels)
@@ -59,13 +59,13 @@ func getImages(path string) ([]mnistImage, error) {
 	}
 	defer file.Close()
 
-	var header mnistImageFileHeader
+	var header imageHeader
 	if err := binary.Read(file, binary.BigEndian, &header); err != nil {
 		return nil, fmt.Errorf("could not read image file header from: %s, %v", path, err)
 	}
 
-	if header.MagicNumber != mnistImageMagic {
-		return nil, fmt.Errorf("invalid header read from image file: %s (%08X not %08X)", path, header.MagicNumber, mnistImageMagic)
+	if header.MagicNumber != imageMagic {
+		return nil, fmt.Errorf("invalid header read from image file: %s (%08X not %08X)", path, header.MagicNumber, imageMagic)
 	}
 
 	images := make([]mnistImage, header.NumberOfImages)
@@ -76,7 +76,7 @@ func getImages(path string) ([]mnistImage, error) {
 	return images, nil
 }
 
-func mnistGetDataset(imagePath, labelPath string) (*mnistDataset, error) {
+func getDataset(imagePath, labelPath string) (*mnistDataset, error) {
 	images, err := getImages(imagePath)
 	if err != nil {
 		return nil, err
@@ -94,20 +94,20 @@ func mnistGetDataset(imagePath, labelPath string) (*mnistDataset, error) {
 	return &mnistDataset{Images: images, Labels: labels, Size: len(images)}, nil
 }
 
-func mnistBatch(dataset *mnistDataset, size, number int) *mnistDataset {
-	startOffset := size * number
-	if startOffset >= len(dataset.Images) {
+func batch(dataset *mnistDataset, size, number int) *mnistDataset {
+	start := size * number
+	if start >= len(dataset.Images) {
 		return &mnistDataset{}
 	}
 
-	endOffset := startOffset + size
-	if endOffset > len(dataset.Images) {
-		endOffset = len(dataset.Images)
+	end := start + size
+	if end > len(dataset.Images) {
+		end = len(dataset.Images)
 	}
 
 	return &mnistDataset{
-		Images: dataset.Images[startOffset:endOffset],
-		Labels: dataset.Labels[startOffset:endOffset],
-		Size:   endOffset - startOffset,
+		Images: dataset.Images[start:end],
+		Labels: dataset.Labels[start:end],
+		Size:   end - start,
 	}
 }

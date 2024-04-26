@@ -5,18 +5,18 @@ import (
 	"math/rand"
 )
 
-type neuralNetwork struct {
+type network struct {
 	B [mnistLabels]float64
-	W [mnistLabels][mnistImageSize]float64
+	W [mnistLabels][imageSize]float64
 }
 
-type neuralNetworkGradient struct {
+type networkGradient struct {
 	BGrad [mnistLabels]float64
-	WGrad [mnistLabels][mnistImageSize]float64
+	WGrad [mnistLabels][imageSize]float64
 }
 
-func newNeuralNetwork() *neuralNetwork {
-	n := &neuralNetwork{}
+func newNetwork() *network {
+	n := &network{}
 	for i := range n.B {
 		n.B[i] = rand.Float64()
 		for j := range n.W[i] {
@@ -26,7 +26,7 @@ func newNeuralNetwork() *neuralNetwork {
 	return n
 }
 
-func neuralNetworkSoftmax(activations []float64) {
+func softmax(activations []float64) {
 	max := activations[0]
 	for _, value := range activations {
 		if value > max {
@@ -45,7 +45,7 @@ func neuralNetworkSoftmax(activations []float64) {
 	}
 }
 
-func neuralNetworkHypothesis(image *mnistImage, network *neuralNetwork) []float64 {
+func hypothesis(image *mnistImage, network *network) []float64 {
 	activations := make([]float64, mnistLabels)
 	for i := range activations {
 		activations[i] = network.B[i]
@@ -53,12 +53,12 @@ func neuralNetworkHypothesis(image *mnistImage, network *neuralNetwork) []float6
 			activations[i] += network.W[i][j] * float64(image.Pixels[j]) / 255.0
 		}
 	}
-	neuralNetworkSoftmax(activations)
+	softmax(activations)
 	return activations
 }
 
-func neuralNetworkGradientUpdate(image *mnistImage, network *neuralNetwork, gradient *neuralNetworkGradient, label uint8) float64 {
-	activations := neuralNetworkHypothesis(image, network)
+func gradientUpdate(image *mnistImage, network *network, gradient *networkGradient, label uint8) float64 {
+	activations := hypothesis(image, network)
 	loss := -math.Log(activations[label])
 
 	for i := range activations {
@@ -76,12 +76,12 @@ func neuralNetworkGradientUpdate(image *mnistImage, network *neuralNetwork, grad
 	return loss
 }
 
-func neuralNetworkTrainingStep(dataset *mnistDataset, network *neuralNetwork, learningRate float64) float64 {
-	gradient := &neuralNetworkGradient{}
+func trainingStep(dataset *mnistDataset, network *network, learningRate float64) float64 {
+	gradient := &networkGradient{}
 	totalLoss := 0.0
 
 	for i := range dataset.Images {
-		totalLoss += neuralNetworkGradientUpdate(&dataset.Images[i], network, gradient, dataset.Labels[i])
+		totalLoss += gradientUpdate(&dataset.Images[i], network, gradient, dataset.Labels[i])
 	}
 
 	for i := range network.B {

@@ -2,42 +2,38 @@ package main
 
 import (
 	"fmt"
-	"math/rand"
-	"time"
 )
 
 const (
-	steps           = 250
-	pInterval       = 50
-	batchSize       = 100
-	trainImagesFile = "data/train-images-idx3-ubyte"
-	trainLabelsFile = "data/train-labels-idx1-ubyte"
-	testImagesFile  = "data/t10k-images-idx3-ubyte"
-	testLabelsFile  = "data/t10k-labels-idx1-ubyte"
+	steps       = 500
+	pInterval   = 50
+	batchSize   = 100
+	trainImages = "data/train-images-idx3-ubyte"
+	trainLabels = "data/train-labels-idx1-ubyte"
+	testImages  = "data/t10k-images-idx3-ubyte"
+	testLabels  = "data/t10k-labels-idx1-ubyte"
 )
 
 func main() {
-	rand.Seed(time.Now().UnixNano())
-
-	trainDataset, err := mnistGetDataset(trainImagesFile, trainLabelsFile)
+	train, err := getDataset(trainImages, trainLabels)
 	if err != nil {
 		fmt.Printf("Error loading train dataset: %v\n", err)
 		return
 	}
 
-	testDataset, err := mnistGetDataset(testImagesFile, testLabelsFile)
+	test, err := getDataset(testImages, testLabels)
 	if err != nil {
 		fmt.Printf("Error loading test dataset: %v\n", err)
 		return
 	}
 
-	network := newNeuralNetwork()
-	batches := len(trainDataset.Images) / batchSize
+	network := newNetwork()
+	batches := len(train.Images) / batchSize
 
 	for i := 0; i <= steps; i++ {
-		batch := mnistBatch(trainDataset, batchSize, i%batches)
-		loss := neuralNetworkTrainingStep(batch, network, 0.5)
-		accuracy := calculateAccuracy(testDataset, network)
+		batch := batch(train, batchSize, i%batches)
+		loss := trainingStep(batch, network, 0.5)
+		accuracy := calculateAccuracy(test, network)
 
 		if (i % pInterval) == 0 {
 			fmt.Printf("Step %04d\tAverage Loss: %.2f\tAccuracy: %.3f\n", i, loss/float64(len(batch.Images)), accuracy)
@@ -47,12 +43,12 @@ func main() {
 	}
 }
 
-func calculateAccuracy(dataset *mnistDataset, network *neuralNetwork) float64 {
+func calculateAccuracy(dataset *mnistDataset, network *network) float64 {
 	var maxActivation float64
 	correct := 0
 
 	for i, image := range dataset.Images {
-		activations := neuralNetworkHypothesis(&image, network)
+		activations := hypothesis(&image, network)
 
 		predict := 0
 		maxActivation = activations[0]
