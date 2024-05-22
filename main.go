@@ -7,7 +7,7 @@ import (
 )
 
 const (
-	steps       = 5000
+	steps       = 500
 	pInterval   = 50
 	batchSize   = 100
 	trainImages = "data/train-images-idx3-ubyte"
