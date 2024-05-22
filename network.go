@@ -27,16 +27,16 @@ func newNetwork() *network {
 }
 
 func softmax(activations []float64) {
-	max := activations[0]
+	currMax := activations[0]
 	for _, value := range activations {
-		if value > max {
-			max = value
+		if value > currMax {
+			currMax = value
 		}
 	}
 
 	var sum float64
 	for i := range activations {
-		activations[i] = math.Exp(activations[i] - max)
+		activations[i] = math.Exp(activations[i] - currMax)
 		sum += activations[i]
 	}
 

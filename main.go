@@ -2,6 +2,8 @@ package main
 
 import (
 	"fmt"
+	"log"
+	"os"
 )
 
 const (
@@ -30,6 +32,17 @@ func main() {
 	network := newNetwork()
 	batches := len(train.Images) / batchSize
 
+	file, err := os.Create("loss_data.txt")
+	if err != nil {
+		log.Fatalf("Failed to create file: %v", err)
+	}
+
+	defer func(file *os.File) {
+		err := file.Close()
+		if err != nil {
+
+		}
+	}(file)
 	for i := 0; i <= steps; i++ {
 		batch := batch(train, batchSize, i%batches)
 		loss := trainingStep(batch, network, 0.5)
@@ -39,6 +52,11 @@ func main() {
 			fmt.Printf("Step %04d\tAverage Loss: %.2f\tAccuracy: %.3f\n", i, loss/float64(len(batch.Images)), accuracy)
 		} else {
 			fmt.Printf("Step %04d\tAverage Loss: %.2f\tAccuracy: %.3f\r", i, loss/float64(len(batch.Images)), accuracy)
+		}
+
+		_, err := file.WriteString(fmt.Sprintf("%d\t%.2f\n", i, loss/float64(len(batch.Images))))
+		if err != nil {
+			log.Fatalf("Failed to write to file: %v", err)
 		}
 	}
 }

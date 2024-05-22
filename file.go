@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/binary"
 	"fmt"
+	"log"
 	"os"
 )
 
@@ -33,7 +34,12 @@ func getLabels(path string) ([]uint8, error) {
 	if err != nil {
 		return nil, fmt.Errorf("could not open file: %s, %v", path, err)
 	}
-	defer file.Close()
+	defer func(file *os.File) {
+		err := file.Close()
+		if err != nil {
+			log.Fatalf("Failed to close file: %v", err)
+		}
+	}(file)
 
 	var header labelHeader
 	if err := binary.Read(file, binary.BigEndian, &header); err != nil {
@@ -57,7 +63,12 @@ func getImages(path string) ([]mnistImage, error) {
 	if err != nil {
 		return nil, fmt.Errorf("could not open file: %s, %v", path, err)
 	}
-	defer file.Close()
+	defer func(file *os.File) {
+		err := file.Close()
+		if err != nil {
+			log.Fatalf("Failed to close file: %v", err)
+		}
+	}(file)
 
 	var header imageHeader
 	if err := binary.Read(file, binary.BigEndian, &header); err != nil {
