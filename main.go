@@ -43,6 +43,7 @@ func main() {
 
 		}
 	}(file)
+
 	for i := 0; i <= steps; i++ {
 		batch := batch(train, batchSize, i%batches)
 		loss := trainingStep(batch, network, 0.5)

@@ -17,17 +17,20 @@ type networkGradient struct {
 
 func newNetwork() *network {
 	n := &network{}
+
 	for i := range n.B {
 		n.B[i] = rand.Float64()
 		for j := range n.W[i] {
 			n.W[i][j] = rand.Float64()
 		}
 	}
+
 	return n
 }
 
 func softmax(activations []float64) {
 	currMax := activations[0]
+
 	for _, value := range activations {
 		if value > currMax {
 			currMax = value
@@ -47,12 +50,14 @@ func softmax(activations []float64) {
 
 func hypothesis(image *mnistImage, network *network) []float64 {
 	activations := make([]float64, mnistLabels)
+
 	for i := range activations {
 		activations[i] = network.B[i]
 		for j := range image.Pixels {
 			activations[i] += network.W[i][j] * float64(image.Pixels[j]) / 255.0
 		}
 	}
+
 	softmax(activations)
 	return activations
 }

@@ -34,6 +34,7 @@ func getLabels(path string) ([]uint8, error) {
 	if err != nil {
 		return nil, fmt.Errorf("could not open file: %s, %v", path, err)
 	}
+
 	defer func(file *os.File) {
 		err := file.Close()
 		if err != nil {
@@ -63,6 +64,7 @@ func getImages(path string) ([]mnistImage, error) {
 	if err != nil {
 		return nil, fmt.Errorf("could not open file: %s, %v", path, err)
 	}
+
 	defer func(file *os.File) {
 		err := file.Close()
 		if err != nil {
